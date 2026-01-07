@@ -38,6 +38,28 @@ struct Vector3 {
 struct Matrix4x4 {
 	float m[4][4];
 
+
+	static Matrix4x4 CreateRotationZ(float degree) {
+		Matrix4x4 res;
+		float rad = degree * (PI / 180.0f);
+		float c = std::cos(rad);
+		float s = std::sin(rad);
+
+		res.m[0][0] = c; res.m[0][1] = s;
+		res.m[1][0] = -s; res.m[1][1] = c;
+		return res;
+	}
+
+	Vector3 TransformVector(const Vector3& v)const {
+		Vector3 res;
+		res.X = v.X * m[0][0] + v.Y * m[1][0] + v.Z * m[2][0] + m[3][0];
+		res.Y = v.X * m[0][1] + v.Y * m[1][1] + v.Z * m[2][1] + m[3][1];
+		res.Z = v.X * m[0][2] + v.Y * m[1][2] + v.Z * m[2][2] + m[3][2];
+		return res;
+	}
+
+	
+
 	Matrix4x4() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -63,7 +85,7 @@ struct Matrix4x4 {
 };
 
 int main() {
-	Matrix4x4 translationMatrix;
+	/*Matrix4x4 translationMatrix;
 
 	translationMatrix.m[3][0] = 10.0f;
 	translationMatrix.m[3][1] = 0.0f;
@@ -78,7 +100,35 @@ int main() {
 	std::cout << "combined Translation: ("
 		<< combineMatrix.m[3][0] << ", "
 		<< combineMatrix.m[3][1] << ", "
-		<< combineMatrix.m[3][2] << ")" << std::endl;
+		<< combineMatrix.m[3][2] << ")" << std::endl;*/
+
+	Vector3 playerPos = {1.0f, 0.0f, 0.0f};
+
+	Matrix4x4 rot = Matrix4x4::CreateRotationZ(90.0f);
+
+	Vector3 newPos = rot.TransformVector(playerPos);
+
+
+	std::cout << "Original: (1, 0, 0)" << std::endl;
+	std::cout << "After 90 deg rotation: ("
+		<< newPos.X << ", " << newPos.Y << ", " << newPos.Z << ")" << std::endl;
+
+	Matrix4x4 rot90 = Matrix4x4::CreateRotationZ(90.0f);
+	Matrix4x4 trans10; trans10.m[3][0] = 10.0f;
+
+
+	Matrix4x4 finalMatrixA = rot90 * trans10;
+	Matrix4x4 finalMatrixB = trans10 * rot90;
+
+	Vector3 resA = finalMatrixA.TransformVector({ 1, 0, 0 });
+	Vector3 resB = finalMatrixB.TransformVector({ 1, 0, 0 });
+	std::cout << "Original: (1, 0, 0)" << std::endl;
+	std::cout << "After 90 deg rotation + 10 translation: ("
+		<< resA.X << ", " << resA.Y << ", " << resA.Z << ")" << std::endl;
+	std::cout << "After 10 translation + 90 deg rotation: ("
+		<< resB.X << ", " << resB.Y << ", " << resB.Z << ")" << std::endl;
+
+
 
 	
 	std::system("pause");
