@@ -18,15 +18,14 @@ bool AABB::Intersects(const AABB& Other)const {
 }
 
 void AABB::Update(const Vector3& WorldPos, const Vector3& Scale) {
-	Vector3 halfSize = Vector3(1.0f, 1.0f, 1.0f);
-	Min.X = WorldPos.X - (halfSize.X * Scale.X);
-	Max.X = WorldPos.X + (halfSize.X * Scale.X);
+	Min.X = WorldPos.X - (LocalHalfSize.X * Scale.X);
+	Max.X = WorldPos.X + (LocalHalfSize.X * Scale.X);
 
-	Min.Y = WorldPos.Y - (halfSize.Y * Scale.Y);
-	Max.Y = WorldPos.Y + (halfSize.Y * Scale.Y);
+	Min.Y = WorldPos.Y - (LocalHalfSize.Y * Scale.Y);
+	Max.Y = WorldPos.Y + (LocalHalfSize.Y * Scale.Y);
 
-	Min.Z = WorldPos.Z - (halfSize.Z * Scale.Z);
-	Max.Z = WorldPos.Z + (halfSize.Z * Scale.Z);
+	Min.Z = WorldPos.Z - (LocalHalfSize.Z * Scale.Z);
+	Max.Z = WorldPos.Z + (LocalHalfSize.Z * Scale.Z);
 }
 
 
