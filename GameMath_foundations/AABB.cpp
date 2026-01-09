@@ -1,4 +1,5 @@
 #include "AABB.h"
+#include <cmath>
 
 AABB::AABB() :Min(0, 0, 0), Max(0, 0, 0) {}
 AABB::AABB(Vector3 min,Vector3 max):Min(min),Max(max){}
@@ -26,6 +27,35 @@ void AABB::Update(const Vector3& WorldPos, const Vector3& Scale) {
 
 	Min.Z = WorldPos.Z - (LocalHalfSize.Z * Scale.Z);
 	Max.Z = WorldPos.Z + (LocalHalfSize.Z * Scale.Z);
+}
+
+
+float CalculationAxisOverlap(float minA, float maxA, float minB, float maxB) {
+	float radiusA = (maxA - minA) * 0.5f;
+	float radiusB = (maxB - minB) * 0.5f;
+	float centerA = (minA + maxA) * 0.5f;
+	float centerB = (minB + maxB) * 0.5f;
+	return (radiusA + radiusB) - std::abs(centerA - centerB);
+}
+
+CollisionInfo AABB::GetCollisionInfo(const AABB& Other) const {
+	CollisionInfo info = { false,0,0,0 };
+	
+
+	//如果沒撞到
+	if (!Intersects(Other)) return info;
+
+	info.bIsHit = true;
+
+	//計算各軸重疊深度
+
+	info.OverlapX = CalculationAxisOverlap(Min.X, Max.X, Other.Min.X, Other.Max.X);
+	info.OverlapY = CalculationAxisOverlap(Min.Y, Max.Y, Other.Min.Y, Other.Max.Y);
+	info.OverlapZ = CalculationAxisOverlap(Min.Z, Max.Z, Other.Min.Z, Other.Max.Z);
+
+	return info;
+
+
 }
 
 

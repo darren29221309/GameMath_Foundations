@@ -1,5 +1,14 @@
 #pragma once
-#include "mathLib.h"
+#include "MathLib.h"
+
+//計算兩個AABB 重疊的深度(OverLapping Depth)
+struct CollisionInfo {
+	bool bIsHit;
+	float OverlapX;
+	float OverlapY;
+	float OverlapZ;
+};
+
 
 struct AABB {
 	Vector3 Min;
@@ -15,5 +24,7 @@ struct AABB {
 
 	//根據世界矩陣更新碰撞盒
 	void Update(const Vector3& WorldPos, const Vector3& Scale);
+
+	CollisionInfo GetCollisionInfo(const AABB& Other) const;
 
 };
