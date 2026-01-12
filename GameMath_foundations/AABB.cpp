@@ -1,8 +1,12 @@
 #include "AABB.h"
 #include <cmath>
 
-AABB::AABB() :Min(0, 0, 0), Max(0, 0, 0) {}
-AABB::AABB(Vector3 min,Vector3 max):Min(min),Max(max){}
+AABB::AABB(Vector3 min,Vector3 max)
+	:LocalMin(min),LocalMax(max)
+{
+	Min = min;
+	Max = max;
+}
 
 bool AABB::Intersects(const AABB& Other)const {
 
@@ -18,15 +22,36 @@ bool AABB::Intersects(const AABB& Other)const {
 	return true;
 }
 
-void AABB::Update(const Vector3& WorldPos, const Vector3& Scale) {
-	Min.X = WorldPos.X - (LocalHalfSize.X * Scale.X);
-	Max.X = WorldPos.X + (LocalHalfSize.X * Scale.X);
+void AABB::Update(const Matrix4x4& transform) {
+	Vector3 corners[8];
+	corners[0] = Vector3(LocalMin.X, LocalMin.Y, LocalMin.Z);
+	corners[1] = Vector3(LocalMax.X, LocalMin.Y, LocalMin.Z);
+	corners[2] = Vector3(LocalMin.X, LocalMax.Y, LocalMin.Z);
+	corners[3] = Vector3(LocalMin.X, LocalMin.Y, LocalMax.Z);
+	corners[4] = Vector3(LocalMax.X, LocalMax.Y, LocalMin.Z);
+	corners[5] = Vector3(LocalMax.X, LocalMin.Y, LocalMax.Z);
+	corners[6] = Vector3(LocalMin.X, LocalMax.Y, LocalMax.Z);
+	corners[7] = Vector3(LocalMax.X, LocalMax.Y, LocalMax.Z);
 
-	Min.Y = WorldPos.Y - (LocalHalfSize.Y * Scale.Y);
-	Max.Y = WorldPos.Y + (LocalHalfSize.Y * Scale.Y);
+	corners[0] = transform.TransformVector(corners[0]);
+	Min.X = corners[0].X;
+	Max.X = corners[0].X;
+	Min.Y = corners[0].Y;
+	Max.Y = corners[0].Y;
+	Min.Z = corners[0].Z;
+	Max.Z = corners[0].Z;
 
-	Min.Z = WorldPos.Z - (LocalHalfSize.Z * Scale.Z);
-	Max.Z = WorldPos.Z + (LocalHalfSize.Z * Scale.Z);
+	for (int i = 1; i < 8; i++) {
+		corners[i] = transform.TransformVector(corners[i]);
+		if (corners[i].X < Min.X)Min.X = corners[i].X;
+		else if (corners[i].X > Max.X)Max.X = corners[i].X;
+
+		if (corners[i].Y < Min.Y)Min.Y = corners[i].Y;
+		else if (corners[i].Y > Max.Y)Max.Y = corners[i].Y;
+
+		if (corners[i].Z < Min.Z)Min.Z = corners[i].Z;
+		else if (corners[i].Z > Max.Z)Max.Z = corners[i].Z;
+	}
 }
 
 

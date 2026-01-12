@@ -13,6 +13,8 @@ struct CollisionInfo {
 struct AABB {
 	Vector3 Min;
 	Vector3 Max;
+	Vector3 LocalMin;
+	Vector3 LocalMax;
 	Vector3 LocalHalfSize = { 1.0f,1.0f,1.0f };//default 1
 
 	AABB();
@@ -23,7 +25,7 @@ struct AABB {
 
 
 	//根據世界矩陣更新碰撞盒
-	void Update(const Vector3& WorldPos, const Vector3& Scale);
+	void Update(const Matrix4x4& transform);
 
 	CollisionInfo GetCollisionInfo(const AABB& Other) const;
 
