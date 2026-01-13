@@ -6,19 +6,9 @@
 #include "AABB.h"
 #include "SceneNode.h"
 
-class RotatorNode :public SceneNode {
-public:
-    float RotationSpeed = 90.0f;
-    void Update(float deltaSeconds) override {
-        //1.算出這幀該轉多少
-        float currentAngle = GetRotationZ();
-        //2.計算新角度
-        float newAngle = currentAngle + (RotationSpeed * deltaSeconds);
 
-        SetRotationZ(newAngle);
-        SceneNode::Update(deltaSeconds);
-    }
-};
+
+
 
 
 
@@ -47,49 +37,102 @@ bool CheckInSight(const SceneNode& oberver,const SceneNode& target,float halfAng
     return dotResult > halfAngleCos; // 暫時回傳 false，等你寫好邏輯
 }
 
+class GuardAI : public SceneNode {
+public:
+    enum class AIState { Patrol, Alert };
+    void SetTarget(SceneNode* target) { m_Target = target; }
+    AIState GetState() const { return m_State; }
+    float RotationSpeed = 90.0f;
+    static const float VIEW_COS;
+    void Update(float deltaSeconds) override {
 
+        if (m_Target == nullptr) {
+            SceneNode::Update(deltaSeconds);
+            return;
+        }
+
+        switch (m_State) {
+        case AIState::Patrol:
+        {
+            //巡邏
+            float newAngle = GetRotationZ() + (RotationSpeed * deltaSeconds);
+            SetRotationZ(newAngle);
+            if (CheckInSight(*this, *m_Target, VIEW_COS)) {
+                SetState(AIState::Alert);
+            }
+            break;
+        }
+
+
+        case AIState::Alert:
+            //警戒
+            if (!CheckInSight(*this, *m_Target, VIEW_COS)) {
+                SetState(AIState::Patrol);
+            }
+            break;
+        }
+
+        SceneNode::Update(deltaSeconds);
+    }
+private:
+    AIState m_State = AIState::Patrol;
+    SceneNode* m_Target = nullptr;
+
+    void SetState(AIState newState) {
+        if (m_State == newState)return;
+
+        std::cout << "State Changed: " << (int)m_State << " -> " << (int)newState << "\n";
+
+        m_State = newState;
+    }
+};
+const float GuardAI::VIEW_COS = 0.707106f;
 
 
 int main() {
     // --- 1. 初始化場景 (Setup Scene) ---
     // 重新 Setup :
-    RotatorNode guard;
+    GuardAI guard;
     guard.SetLocalPosition(Vector3(0, 0, 0)); // 守衛在中心
-    guard.RotationSpeed = 45.0f;
+    guard.RotationSpeed = 60.0f;
 
     SceneNode thief;
     // 注意：這裡不設父子關係 (No SetParent)
-    // 小偷固定在世界座標 (10, 0, 0)
-    thief.SetLocalPosition(Vector3(10, 0, 0));
+    // 小偷固定在世界座標 (0, 10, 0)
+    thief.SetLocalPosition(Vector3(0, 10, 0));
  
+    guard.SetTarget(&thief);
 
-    float fovThreshold = std::cos(45.0f * 3.1415926f / 180.0f);
-
-    std::cout << "--- Polymorphism Test: Auto-Rotating Sun ---" << std::endl;
+    std::cout << "--- Phase 6: FSM Test (Guard vs Thief) ---\n";
+    std::cout << "Guard at (0,0), Thief at (10,0)\n";
+    std::cout << "Expected: Patrol -> Alert (when looking at Thief)\n\n";
 
     float dt = 0.1f;
+    const int totalFrames = 80;
 
 
-    for (int fps = 0; fps <= 60; fps++) {
+    for (int fps = 0; fps <= totalFrames; fps++) {
         // 守衛原地自轉
         guard.Update(dt);
 
-        // 檢查視線
-        bool bSeen = CheckInSight(guard, thief, fovThreshold);
+        float currentAngle = guard.GetRotationZ();
 
-        if (bSeen) {
-            printf("Frame %2d (Angle %.1f) | [!] I SEE YOU!\n", fps, guard.GetRotationZ());
-        }
-        else {
-            printf("Frame %2d (Angle %.1f) | ...\n", fps, guard.GetRotationZ());
-        }
+        // 取得狀態字串
+        const char* stateStr = "UNKNOWN";
+        if (guard.GetState() == GuardAI::AIState::Patrol) stateStr = "PATROL";
+        else if (guard.GetState() == GuardAI::AIState::Alert)  stateStr = "ALERT !!!";
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        printf("Frame [%2d] | Angle: %5.1f | State: %s\n",
+            fps, currentAngle, stateStr);
+
+        // --- C. 模擬幀率 (Sleep) ---
+        // 讓 Console 不要跑太快，方便肉眼觀察
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     
    
-
+    std::cout << "\nTest Finished.\n";
     std::system("pause");
     return 0;
 }
