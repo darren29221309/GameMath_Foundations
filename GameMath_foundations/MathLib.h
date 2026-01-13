@@ -9,6 +9,8 @@ struct Vector3 {
 	Vector3 Cross(const Vector3& Other) const;
 	float SizeSquared() const;
 	void Normalize();
+	//¦V¶q´îªk
+	Vector3 operator-(const Vector3& Other)const;
 };
 
 struct Matrix4x4 {

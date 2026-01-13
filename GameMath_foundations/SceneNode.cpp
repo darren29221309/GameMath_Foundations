@@ -53,8 +53,8 @@ void SceneNode::SetLocalScale(const Vector3& scale) {
 	SetDirty();
 }
 
-void SceneNode::SetRotationZ(float rot) {
-	localRotationZ = rot;
+void SceneNode::SetRotationZ(float angle) {
+	localRotationZ = angle;
 	SetDirty();
 }
 
@@ -109,4 +109,10 @@ Vector3 SceneNode::GetWorldPosition() const {
 const Matrix4x4& SceneNode::GetWorldTransform() const {
 	UpdateTransform();
 	return worldTransform;
+}
+
+void SceneNode::Update(float deltaSeconds) {
+	for (SceneNode* child : children) {
+		child->Update(deltaSeconds);
+	}
 }

@@ -27,16 +27,23 @@ protected:
 public:
 	SceneNode();
 
+	//Setter
 	void SetParent(SceneNode* newParent);
 	void SetLocalPosition(const Vector3& pos);
 	void SetLocalScale(const Vector3& scale);
-	void SetRotationZ(float rot);
+	void SetRotationZ(float angle);
 
+	//Getter
 	Vector3 GetWorldPosition() const;
-	const Matrix4x4& GetWorldTransform() const;
 	Vector3 GetLocalPosition() const { return localPosition; }
+	const Matrix4x4& GetWorldTransform() const;
+	float GetRotationZ() const { return localRotationZ; }
 
 	void AddChild(SceneNode* child);
 	void RemoveChild(SceneNode* child);
+
+	virtual void Update(float deltaSeconds);
+
+	virtual ~SceneNode(){}
 
 };

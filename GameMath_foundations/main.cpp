@@ -1,77 +1,94 @@
 #include <iostream>
 #include <thread> // 為了讓文字輸出不要跑太快，可用 this_thread::sleep_for
 #include <chrono>
+#include <cmath>
 #include "MathLib.h"
 #include "AABB.h"
 #include "SceneNode.h"
 
+class RotatorNode :public SceneNode {
+public:
+    float RotationSpeed = 90.0f;
+    void Update(float deltaSeconds) override {
+        //1.算出這幀該轉多少
+        float currentAngle = GetRotationZ();
+        //2.計算新角度
+        float newAngle = currentAngle + (RotationSpeed * deltaSeconds);
+
+        SetRotationZ(newAngle);
+        SceneNode::Update(deltaSeconds);
+    }
+};
+
+
+
+bool CheckInSight(const SceneNode& oberver,const SceneNode& target,float halfAngleCos) {
+    // ==========================================
+    // TODO: 請在此處實作你的數學邏輯
+    // ==========================================
+
+    // 1. 取得世界座標 (GetWorldPosition)
+    Vector3 obeVec = oberver.GetWorldPosition();
+    Vector3 tarVec = target.GetWorldPosition();
+    // 2. 計算方向向量 (target - observer) 並 Normalize
+    // (這需要你在 MathLib 裡實作 operator-)
+    Vector3 dir = tarVec - obeVec;
+    dir.Normalize();
+    // 3. 取得守衛的正前方向量
+    // 利用 observer.GetWorldTransform().TransformVector(Vector3(1,0,0))
+    Vector3 obeForwardDirection = oberver.GetWorldTransform().TransformVector(Vector3(1, 0, 0));
+    obeForwardDirection.Normalize();
+
+    // 4. 計算點積 (Dot)
+    float dotResult = dir.Dot(obeForwardDirection);
+
+    // 5. 回傳 (Dot > halfAngleCos)
+
+    return dotResult > halfAngleCos; // 暫時回傳 false，等你寫好邏輯
+}
+
+
+
+
 int main() {
     // --- 1. 初始化場景 (Setup Scene) ---
+    // 重新 Setup :
+    RotatorNode guard;
+    guard.SetLocalPosition(Vector3(0, 0, 0)); // 守衛在中心
+    guard.RotationSpeed = 45.0f;
 
-    // A. 太陽系統
-    SceneNode sun;
-    sun.SetLocalPosition(Vector3(0, 0, 0));
+    SceneNode thief;
+    // 注意：這裡不設父子關係 (No SetParent)
+    // 小偷固定在世界座標 (10, 0, 0)
+    thief.SetLocalPosition(Vector3(10, 0, 0));
+ 
 
-    SceneNode earth;
-    earth.SetParent(&sun);
-    earth.SetLocalPosition(Vector3(10, 0, 0)); // 地球在太陽右邊 10 單位
+    float fovThreshold = std::cos(45.0f * 3.1415926f / 180.0f);
 
-    // 定義地球的碰撞盒形狀 (半徑為 1 的方塊)
-    // 注意：這只是「原始形狀」，還沒被放到世界中
-    AABB earthShape(Vector3(-1, -1, -1), Vector3(1, 1, 1));
+    std::cout << "--- Polymorphism Test: Auto-Rotating Sun ---" << std::endl;
 
-    // B. 隕石 (靜止障礙物)
-    SceneNode asteroid;
-    asteroid.SetLocalPosition(Vector3(0, 10, 0)); // 放在 (0, 10, 0) 也就是 90 度的位置
+    float dt = 0.1f;
 
-    // 定義隕石的碰撞盒形狀 (大一點，半徑為 2)
-    AABB asteroidShape(Vector3(-2, -2, -2), Vector3(2, 2, 2));
 
-    // 因為隕石不會動，我們可以先更新一次它的 AABB，或者在迴圈裡更新也可以
-    // 為了保險起見，我們養成好習慣：在迴圈裡更新所有東西
-    AABB earthWorldAABB = earthShape;     // 準備兩個變數來存「世界空間」的 AABB
-    AABB asteroidWorldAABB = asteroidShape;
+    for (int fps = 0; fps <= 60; fps++) {
+        // 守衛原地自轉
+        guard.Update(dt);
 
-    std::cout << "--- Simulation Start: Earth vs Asteroid ---" << std::endl;
+        // 檢查視線
+        bool bSeen = CheckInSight(guard, thief, fovThreshold);
 
-    // --- 2. 遊戲迴圈 (Game Loop) ---
-    // 模擬 0 到 100 度
-    for (int angle = 0; angle <= 100; angle += 5) {
-
-        // --- Logic Update (邏輯更新) ---
-        sun.SetRotationZ((float)angle); // 太陽轉動 -> 帶動地球
-
-        // ==========================================
-        // TODO: 請在此處實作物理更新與碰撞檢測
-        // ==========================================
-
-        // 步驟 1: 獲取 Earth 和 Asteroid 最新的 World Transform (矩陣)
-        Matrix4x4 earthMatrix = earth.GetWorldTransform();
-        Matrix4x4 asteroidMatrix = asteroid.GetWorldTransform();
-
-        // 步驟 2: 使用矩陣更新 earthWorldAABB 和 asteroidWorldAABB
-        // 注意：要用 Update() 函數
-        earthWorldAABB.Update(earthMatrix);
-        asteroidWorldAABB.Update(asteroidMatrix);
-
-        // 步驟 3: 檢查是否碰撞 (Intersects)
-        // 如果撞到了：
-        //    1. 印出 "BOOM! Collision at angle: " << angle
-        //    2. break 跳出迴圈 (模擬遊戲結束)
-        if (earthWorldAABB.Intersects(asteroidWorldAABB)) {
-            printf("BOOM! Collision at angle: %d\n", angle);
-            break;
+        if (bSeen) {
+            printf("Frame %2d (Angle %.1f) | [!] I SEE YOU!\n", fps, guard.GetRotationZ());
+        }
+        else {
+            printf("Frame %2d (Angle %.1f) | ...\n", fps, guard.GetRotationZ());
         }
 
-        // ==========================================
-        // Debug 輸出 (沒撞到時顯示位置)
-        // 為了不讓畫面太亂，你可以只印 Earth 的位置
-        Vector3 earthPos = earth.GetWorldPosition();
-        printf("Angle: %d | Earth Pos: (%.1f, %.1f)\n", angle, earthPos.X, earthPos.Y);
-
-        // 稍微暫停一下，讓你能在 Console 看到過程
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    
+   
 
     std::system("pause");
     return 0;
