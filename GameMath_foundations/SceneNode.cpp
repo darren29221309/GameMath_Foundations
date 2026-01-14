@@ -1,5 +1,9 @@
 #include "SceneNode.h"
 #include <cmath>
+#include <iostream>
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 SceneNode::SceneNode()
 	:localPosition(0, 0, 0)
@@ -9,37 +13,26 @@ SceneNode::SceneNode()
 {
 }
 
+SceneNode::~SceneNode() {
+	std::cout << "SceneNode Destroyed" << std::endl;
+}
+
 void SceneNode::SetDirty() {
 	if (bIsDirty)return;
 	bIsDirty = true;
 
-	for (SceneNode* child : children) {
+	for (const auto& child : m_Children) {
 		child->SetDirty();
 	}
 }
 
+void SceneNode::AddChild(std::unique_ptr<SceneNode> child) {
 
-void SceneNode::SetParent(SceneNode* newParent) {
-	//原有父節點
-	if (parent) {
-		parent->RemoveChild(this);
-	}
+	if (child == nullptr)return;
 
-	parent = newParent;
-	if (parent) {
-		parent->AddChild(this);
-	}
+	child->m_Parent = this;
 
-	SetDirty();
-}
-
-void SceneNode::AddChild(SceneNode* child) {
-	children.push_back(child);
-}
-
-void SceneNode::RemoveChild(SceneNode* child) {
-	auto it = std::remove(children.begin(), children.end(), child);
-	children.erase(it, children.end());
+	m_Children.push_back(std::move(child));
 }
 
 
@@ -84,9 +77,9 @@ void SceneNode::UpdateTransform() const {
 	//4.組合
 	Matrix4x4 localTransform = matScale * matRot * matTrans;
 
-	if (parent) {
+	if (m_Parent) {
 		//有父節點: world = local * ParentWorld
-		worldTransform = localTransform * parent->GetWorldTransform();
+		worldTransform = localTransform * m_Parent->GetWorldTransform();
 	}
 	else {
 		worldTransform = localTransform;
@@ -112,7 +105,7 @@ const Matrix4x4& SceneNode::GetWorldTransform() const {
 }
 
 void SceneNode::Update(float deltaSeconds) {
-	for (SceneNode* child : children) {
+	for (const auto& child : m_Children) {
 		child->Update(deltaSeconds);
 	}
 }

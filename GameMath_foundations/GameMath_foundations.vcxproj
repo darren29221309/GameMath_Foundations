@@ -130,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="GuardAI.h" />
     <ClInclude Include="MathLib.h" />
     <ClInclude Include="SceneNode.h" />
   </ItemGroup>

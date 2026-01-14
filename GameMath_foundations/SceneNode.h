@@ -2,6 +2,7 @@
 #include "MathLib.h"
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 
 class SceneNode {
@@ -11,8 +12,8 @@ private:
 	float localRotationZ;
 
 	//¶¥¼h
-	SceneNode* parent = nullptr;
-	std::vector<SceneNode*> children;
+	SceneNode* m_Parent = nullptr;
+	std::vector<std::unique_ptr<SceneNode>> m_Children;
 
 
 	//Dirty Flag
@@ -28,7 +29,6 @@ public:
 	SceneNode();
 
 	//Setter
-	void SetParent(SceneNode* newParent);
 	void SetLocalPosition(const Vector3& pos);
 	void SetLocalScale(const Vector3& scale);
 	void SetRotationZ(float angle);
@@ -39,11 +39,10 @@ public:
 	const Matrix4x4& GetWorldTransform() const;
 	float GetRotationZ() const { return localRotationZ; }
 
-	void AddChild(SceneNode* child);
-	void RemoveChild(SceneNode* child);
+	void AddChild(std::unique_ptr<SceneNode> child);
 
 	virtual void Update(float deltaSeconds);
 
-	virtual ~SceneNode(){}
+	virtual ~SceneNode();
 
 };
