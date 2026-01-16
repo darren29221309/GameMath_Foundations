@@ -1,5 +1,5 @@
-#include <iostream>
-#include <thread> // ¬°¤FÅı¤å¦r¿é¥X¤£­n¶]¤Ó§Ö¡A¥i¥Î this_thread::sleep_for
+ï»¿#include <iostream>
+#include <thread> // ç‚ºäº†è®“æ–‡å­—è¼¸å‡ºä¸è¦è·‘å¤ªå¿«ï¼Œå¯ç”¨ this_thread::sleep_for
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -23,42 +23,42 @@ public:
 
 int main() {
     // ==========================================
-    // 1. «Ø¥ßª«¥ó (¨Ï¥Î make_unique)
+    // 1. å»ºç«‹ç‰©ä»¶ (ä½¿ç”¨ make_unique)
     // ==========================================
 
-    // «Ø¥ß¤p°½ (Thief)
-    // ª`·N¡G¥Î auto Åı½sÄ¶¾¹¦Û¤v±À¾É«¬§O (std::unique_ptr<SceneNode>)
+    // å»ºç«‹å°å· (Thief)
+    // æ³¨æ„ï¼šç”¨ auto è®“ç·¨è­¯å™¨è‡ªå·±æ¨å°å‹åˆ¥ (std::unique_ptr<SceneNode>)
     auto thief = std::make_unique<SceneNode>();
-    thief->SetLocalPosition(Vector3(0, 10, 0)); // ¤p°½¦b (0, 10, 0)
+    thief->SetLocalPosition(Vector3(0, -10, 0)); // å°å·åœ¨ (0, 10, 0)
 
-    // «Ø¥ß¦u½Ã (Guard)
-    // ª`·N¡G³o¸Ì¬O make_unique<GuardAI>
+    // å»ºç«‹å®ˆè¡› (Guard)
+    // æ³¨æ„ï¼šé€™è£¡æ˜¯ make_unique<GuardAI>
     auto guard = std::make_unique<GuardAI>();
     guard->SetLocalPosition(Vector3(0, 0, 0));
-    guard->SetRotationZ(90.0f); // ­±¦V +Y¡A­I¹ï¤p°½
+    guard->SetRotationZ(0.0f); // é¢å‘ +Yï¼ŒèƒŒå°å°å·
     guard->RotationSpeed = 60.0f;
 
     // ==========================================
-    // 2. ³]©wÃöÁp (³Ì­«­nªº¤@¨B)
+    // 2. è¨­å®šé—œè¯ (æœ€é‡è¦çš„ä¸€æ­¥)
     // ==========================================
 
-    // A. ³]©w¥Ø¼Ğ (SetTarget)
-    // Guard »İ­nª¾¹D¤p°½¦b­ş¸Ì¡A¦ı¤£»İ­n "¾Ö¦³" ¤p°½¡C
-    // ©Ò¥H§Ú­Ì¥Î .get() ¨ú±o Raw Pointer ¶Ç¶i¥h¡C
+    // A. è¨­å®šç›®æ¨™ (SetTarget)
+    // Guard éœ€è¦çŸ¥é“å°å·åœ¨å“ªè£¡ï¼Œä½†ä¸éœ€è¦ "æ“æœ‰" å°å·ã€‚
+    // æ‰€ä»¥æˆ‘å€‘ç”¨ .get() å–å¾— Raw Pointer å‚³é€²å»ã€‚
     guard->SetTarget(thief.get());
 
-    // B. «Ø¥ß³õ´º¾ğ (Scene Tree)
-    // §Ú­Ì«Ø¥ß¤@­Ó Root ¸`ÂI¨ÓºŞ²z©Ò¦³¤H
+    // B. å»ºç«‹å ´æ™¯æ¨¹ (Scene Tree)
+    // æˆ‘å€‘å»ºç«‹ä¸€å€‹ Root ç¯€é»ä¾†ç®¡ç†æ‰€æœ‰äºº
     auto root = std::make_unique<SceneNode>();
 
-    // ÃöÁä¡G±N guard ©M thief ªº¾Ö¦³Åv "²¾¥æ (Move)" µ¹ root
-    // ?? ª`·N¡G³o¦æ°õ¦æ«á¡AÅÜ¼Æ 'guard' ©M 'thief' ´NÅÜ¦¨ nullptr ¤F¡I
-    // ©Ò¥H¤W­± SetTarget ¥²¶·¥ı°µ¡I
+    // é—œéµï¼šå°‡ guard å’Œ thief çš„æ“æœ‰æ¬Š "ç§»äº¤ (Move)" çµ¦ root
+    // âš ï¸ æ³¨æ„ï¼šé€™è¡ŒåŸ·è¡Œå¾Œï¼Œè®Šæ•¸ 'guard' å’Œ 'thief' å°±è®Šæˆ nullptr äº†ï¼
+    // æ‰€ä»¥ä¸Šé¢ SetTarget å¿…é ˆå…ˆåšï¼
     root->AddChild(std::move(guard));
     root->AddChild(std::move(thief));
 
     // ==========================================
-    // 3. ¹CÀ¸°j°é
+    // 3. éŠæˆ²è¿´åœˆ
     // ==========================================
 
     float dt = 0.1f;
@@ -67,22 +67,23 @@ int main() {
     std::cout << "--- Phase 8: Smart Pointer Test ---\n";
 
     for (int i = 0; i < totalFrames; i++) {
-        // ²{¦b¥u»İ­n©I¥s root ªº Update
-        // ¥¦·|¦Û°Ê»¼°j©I¥s©³¤Uªº¤p°½©M¦u½Ã
+        // ç¾åœ¨åªéœ€è¦å‘¼å« root çš„ Update
+        // å®ƒæœƒè‡ªå‹•éè¿´å‘¼å«åº•ä¸‹çš„å°å·å’Œå®ˆè¡›
         root->Update(dt);
 
-        // --- ³o¸Ì¦³­Ó¤p³Â·Ğ ---
-        // ¦]¬° guard ¤w¸g³Q move ¶i¥h¤F¡A§Ú­Ì¤â¤Wªº 'guard' ÅÜ¼Æ¬OªÅªº¡C
-        // ©Ò¥H¨S¿ìªkª½±µ©I¥s guard->GetRotationZ() ¨Ó¦L Log¡C
+        // --- é€™è£¡æœ‰å€‹å°éº»ç…© ---
+        // å› ç‚º guard å·²ç¶“è¢« move é€²å»äº†ï¼Œæˆ‘å€‘æ‰‹ä¸Šçš„ 'guard' è®Šæ•¸æ˜¯ç©ºçš„ã€‚
+        // æ‰€ä»¥æ²’è¾¦æ³•ç›´æ¥å‘¼å« guard->GetRotationZ() ä¾†å° Logã€‚
 
-        // ¬°¤FÂ²³æ°_¨£¡A§Ú­Ì³o¦¸¥ı¤£¦L¸Ô²Ó Log¡A
-        // ©ÎªÌ§A¥i¥H¥u¨Ì¿à GuardAI ¤º³¡ SetState ¦L¥Xªº "State Changed" Log¡C
+        // ç‚ºäº†ç°¡å–®èµ·è¦‹ï¼Œæˆ‘å€‘é€™æ¬¡å…ˆä¸å°è©³ç´° Logï¼Œ
+        // æˆ–è€…ä½ å¯ä»¥åªä¾è³´ GuardAI å…§éƒ¨ SetState å°å‡ºçš„ "State Changed" Logã€‚
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
-    std::cout << "\n[End of Main] Root will be destroyed automatically.\n";
-    // ·í main µ²§ô¡Aroot ·|¦Û°Ê¸Ñºc -> ¦u½Ã©M¤p°½¤]·|¦Û°Ê¸Ñºc -> §¹¥şµL Memory Leak
+    std::cout << "\n------------------------------------------------\n";
+    std::cout << "Final Score: " << GameManager::GetInstance().Score << "\n";
+    std::cout << "------------------------------------------------\n";
 
     std::system("pause");
     return 0;

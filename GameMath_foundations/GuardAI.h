@@ -1,5 +1,6 @@
 #pragma once // ¨¾¤î­«½Æ include
 #include "SceneNode.h"
+#include "GameManager.h"
 #include <iostream>
 #include <cmath>
 
@@ -59,12 +60,11 @@ private:
     void SetState(AIState newState) {
         if (m_State == newState) return;
 
-        // Â²³æ¦L¥Xª¬ºA¤Á´«
-        std::cout << ">>> [AI State Change] "
-            << (m_State == AIState::Patrol ? "Patrol" : "Alert")
-            << " -> "
-            << (newState == AIState::Patrol ? "Patrol" : "Alert")
-            << "\n";
+        if (newState == AIState::Alert) {
+            std::cout << ">>> Target Spotted! Adding Score...\n";
+
+            GameManager::GetInstance().AddScore(100);
+        }
 
         m_State = newState;
     }
