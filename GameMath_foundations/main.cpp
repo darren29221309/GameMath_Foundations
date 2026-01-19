@@ -7,7 +7,16 @@
 #include "MathLib.h"
 #include "AABB.h"
 #include "SceneNode.h"
+#include "GameManager.h"
 #include "GuardAI.h"
+
+
+template <typename T>
+T* SafeCast(SceneNode* node) {
+    // dynamic_cast 是 C++ 內建的安全轉型
+    // 如果 node 真的是 T 型別 (或 T 的子類別)，它會回傳指標
+    return dynamic_cast<T*>(node);
+}
 
 
 class NamedNode : public SceneNode {
@@ -38,15 +47,36 @@ int main() {
     guard->SetRotationZ(0.0f); // 面向 +Y，背對小偷
     guard->RotationSpeed = 60.0f;
 
+    
+
+
+    SceneNode* rawGuardPtr = guard.get();
+    SceneNode* rawThiefPtr = thief.get();
+
+    GuardAI* castedGuard = SafeCast<GuardAI>(rawGuardPtr);
+
+    if (castedGuard) {
+        std::cout << "[SafeCast] Success! rawGuard is indeed a GuardAI.\n";
+    }
+    else {
+        std::cout << "[SafeCast] Failed! Something is wrong.\n";
+    }
+
+    GuardAI* castedThief = SafeCast<GuardAI>(rawThiefPtr);
+    if (castedThief) {
+        std::cout << "[SafeCast] Danger! Thief became a Guard?!\n";
+    }
+    else {
+        std::cout << "[SafeCast] Safe! Thief is NOT a GuardAI. (Return nullptr)\n";
+    }
+    std::cout << "------------------------------\n\n";
+
     // ==========================================
     // 2. 設定關聯 (最重要的一步)
     // ==========================================
 
-    // A. 設定目標 (SetTarget)
-    // Guard 需要知道小偷在哪裡，但不需要 "擁有" 小偷。
-    // 所以我們用 .get() 取得 Raw Pointer 傳進去。
     guard->SetTarget(thief.get());
-
+    guard->AddObserver(&GameManager::GetInstance());
     // B. 建立場景樹 (Scene Tree)
     // 我們建立一個 Root 節點來管理所有人
     auto root = std::make_unique<SceneNode>();
@@ -70,14 +100,6 @@ int main() {
         // 現在只需要呼叫 root 的 Update
         // 它會自動遞迴呼叫底下的小偷和守衛
         root->Update(dt);
-
-        // --- 這裡有個小麻煩 ---
-        // 因為 guard 已經被 move 進去了，我們手上的 'guard' 變數是空的。
-        // 所以沒辦法直接呼叫 guard->GetRotationZ() 來印 Log。
-
-        // 為了簡單起見，我們這次先不印詳細 Log，
-        // 或者你可以只依賴 GuardAI 內部 SetState 印出的 "State Changed" Log。
-
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 

@@ -133,8 +133,10 @@
     <ClInclude Include="AABB.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GuardAI.h" />
+    <ClInclude Include="IObserver.h" />
     <ClInclude Include="MathLib.h" />
     <ClInclude Include="SceneNode.h" />
+    <ClInclude Include="Subject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

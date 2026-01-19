@@ -1,11 +1,11 @@
 #pragma once // 防止重複 include
 #include "SceneNode.h"
-#include "GameManager.h"
 #include <iostream>
 #include <cmath>
+#include "Subject.h"
 
 // 簡單的 AI 測試類別
-class GuardAI : public SceneNode {
+class GuardAI : public SceneNode,public Subject {
 public:
     enum class AIState { Patrol, Alert };
 
@@ -63,7 +63,7 @@ private:
         if (newState == AIState::Alert) {
             std::cout << ">>> Target Spotted! Adding Score...\n";
 
-            GameManager::GetInstance().AddScore(100);
+            Notify("TargetSpotted", 10);
         }
 
         m_State = newState;

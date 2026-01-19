@@ -47,5 +47,11 @@
     <ClInclude Include="GameManager.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="IObserver.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="Subject.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
